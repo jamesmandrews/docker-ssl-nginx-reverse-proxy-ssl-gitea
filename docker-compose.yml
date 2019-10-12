@@ -1,0 +1,76 @@
+version: '3'
+
+networks:
+  private_network:
+    external: false
+
+services:
+
+  nginx:
+    image: nginx:alpine
+    container_name: reverse_proxy
+    depends_on:
+      - gitea
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./conf/nginx:/etc/nginx
+      - ./conf/certbot/conf:/etc/letsencrypt
+      - ./conf/certbot/www:/var/www/certbot 
+      - ./data/html:/var/www/html           
+    networks:
+      - private_network
+    restart: always
+
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    restart: unless-stopped
+    volumes:
+      - ./conf/certbot/conf:/etc/letsencrypt
+      - ./conf/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - private_network
+
+
+  gitea:
+    image: gitea/gitea:1.8.3
+    container_name: web_gitea
+    restart: always
+    depends_on:
+      - giteadb
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - DB_TYPE=mysql
+      - DB_HOST=giteadb:3306
+      - DB_NAME=gitea
+      - DB_USER=gitea
+      - DB_PASSWD=giteasecret
+    ports:
+      - "22:22"
+    volumes:
+      - ./data/gitea:/data
+    networks:
+      - private_network
+
+
+  giteadb:
+    image: mariadb:10
+    container_name: giteadb
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=giteasecret
+      - MYSQL_DATABASE=gitea
+      - MYSQL_USER=gitea
+      - MYSQL_PASSWORD=giteasecret
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data/gitea_db/:/var/lib/mysql
+    networks:
+      - private_network
+
