@@ -208,3 +208,11 @@ You should be greated with the same message, but this time the certificates will
 ## Gitea configuration.
 
 Clicking on the login button of your Gitea installation will bring you to the install page.  I found that I had to use the root user and password for the database to get the database setup, but later was able to edit to the gitea user and password.  Don't forget to setup an administrator username and password. Follow the gitea instructions from here, to configure your installation.  As I get more comfortable with Gitea I'll write up more about it here.
+
+# Ending note
+A quick note, in the data directory you have you'll have 3 sub directories.
+
+* gitea - is the install directory of gitea
+* gitea_db - is the maria db database files.
+* html - is the html directory for our static web server.
+
