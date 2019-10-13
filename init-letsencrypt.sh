@@ -5,7 +5,7 @@ if ! [ -x "$(command -v docker-compose)" ]; then
   exit 1
 fi
 
-domains="gitea.impishindustries.com,console.impishindustries.com"
+domains="ourwebsite.com,www.ourwebsite.com,gitea.ourwebsite.com"
 cert_name="websites"
 rsa_key_size=4096
 email="" # Adding a valid address is strongly recommended
