@@ -187,7 +187,13 @@ You should visit your URLs you'll get warnings about insecure certificates, but 
 
 Once you verify all your domains are available it's time to run it in production mode, but before running in production mode you should bring down the containers with the ```docker-compose down``` command.
 
+Now execute the command in productino mode.
+
 ```
-./init-letsencrypt.sh --stage
+./init-letsencrypt.sh
 ```
+
+You should be greated with the same message, but this time the certificates will be real and you should not be able to access the front page of Gitea, and of Your website.
+
+# Gitea cnfiguration.
 
