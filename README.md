@@ -143,3 +143,51 @@ The SSL server is also mostly the same, except instead fo defining a root direct
 # Certbot and init-letsencrypt.sh
 
 Once you have configured NGINX it is time to initialize your SSL certificates.  The problem is that in order for NGINX to start the SSL configuration we defined, we need to have actual SSL certificates.  We do that with the included script ```init-letsencrypt.sh```.  The original source for this script is from the [Nginx and Let’s Encrypt with Docker in Less Than 5 Minutes](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71) article.  I've made some minor modifications to fix a problem that was created when trying to do multiple servers.
+
+Let's get to configuring the script so we can create the certificates.  
+
+```
+domains="ourwebsite.com,www.ourwebsite.com,gitea.ourwebsite.com"
+cert_name="websites"
+rsa_key_size=4096
+email="" # Adding a valid address is strongly recommended
+```
+
+domains:  In our example we have 3 domains.  We want to pass them in as a single string.  Each domain separated by a comma, with NO SPACES.  This is how we'll pass them into Cerbot.   
+
+cert_name: is the path in our ssl cert that we use as a common name so that we can load in the cert from all our servers.
+
+rsa_key_size: Is how big if a key you want to create 4096 is a good place to start.
+
+email: Define an email address, it's not manditory, but it's recommended.
+
+With these 4 variables in the script set we are not ready to run it in staging mode.
+
+```
+./init-letsencrypt.sh --stage
+```
+
+We want to first run it in stage to make sure everything is configured correctly.  If we execute it in production mode let's encrypt may encounter rate limits which will prevent you from successfully getting your certificate.
+
+If you run the command and are greeted with a the below message then you have successfully configured the servers.
+
+```
+IMPORTANT NOTES:
+ - Congratulations! Your certificate and chain have been saved at:
+   /etc/letsencrypt/live/websites/fullchain.pem
+   Your key file has been saved at:
+   /etc/letsencrypt/live/websites/privkey.pem
+   Your cert will expire on 2020-01-11. To obtain a new or tweaked
+   version of this certificate in the future, simply run certbot
+   again. To non-interactively renew *all* of your certificates, run
+   "certbot renew"
+```
+
+You should visit your URLs you'll get warnings about insecure certificates, but the fact that you have certificates is what you want to see.
+
+Once you verify all your domains are available it's time to run it in production mode, but before running in production mode you should bring down the containers with the ```docker-compose down``` command.
+
+```
+./init-letsencrypt.sh --stage
+```
+
