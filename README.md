@@ -15,6 +15,11 @@ The docker compose is comprised of 5 pieces.
 * GITEA - For our example we'll use this as our back end application that we reverse proxy to
 * MariaDB (GITEADB) - Database layer for Gitea.
 
+The only things that we need to change here are the database settings in the GITEA container and the GITEADB container.  Choose a username and password and a password for the root user, save and your done with editing the docker compose file.
+
+Do not change the service names as the initializing script will require the "nginx" service name, and NGINX uses the service names for routing purposes on the internal network.
+
+
 # Configuring NGINX.
 
 We're going to configure 2 servers.  One will be a static website, and the other will be our reverse proxy to gitea.  We include the entire nginx configuration directory so that we can make manage it without baking it into the NGINX container itself
@@ -57,6 +62,7 @@ Our first server declaration is pretty simple.  We have our domain ```ourwebsite
             return 301 https://$host$request_uri;
         }        
     }
+
 ```
 
 The SSL layer We define our webroot, and our index file type.  We'll also define where we'll keep our certificate files.  In our setup all certificates for all domains will go into one file.  
@@ -195,5 +201,6 @@ Now execute the command in productino mode.
 
 You should be greated with the same message, but this time the certificates will be real and you should not be able to access the front page of Gitea, and of Your website.
 
-# Gitea cnfiguration.
+# Gitea configuration.
 
+Clicking on the login button of your Gitea installation will bring you to the install page.  I found that I had to use the root user and password for the database to get the database setup, but later was able to edit to the gitea user and password.  Follow the gitea instructions from here, to configure your installation.
