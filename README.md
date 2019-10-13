@@ -41,7 +41,7 @@ For this tutorial we only really care about the files in ```conf/nginx/conf.d```
 
 # Static Website.
 
-Our first server declaration is pretty simple.  We have our domain ```ourwebsite.com``` on port 80 we add the acme-challenge location which Certbot uses to make sure we have a valid webserver up.  The main root, we'll do a redirect to the secure 443 layer.
+Our first server declaration is pretty simple.  We have our domain ```ourwebsite.com``` on port 80 we add the acme-challenge location which Certbot uses to make sure we have a valid webserver up.  The main root, we'll do a redirect to the secure 443 layer if someone goes to port 80.
 
 ```
     server {
@@ -84,3 +84,62 @@ The SSL layer We define our webroot, and our index file type.  We'll also define
 
 ```
 
+
+# Gitea reverse proxy.
+
+The reverse proxy is a bit more complicated, but not that much.  First we create an upstream reference to the docker gitea installation.
+
+```
+    upstream docker-gitea {
+        server gitea:3000;
+    }
+```
+
+Then just like for the static website we'll create our acme-challenge location, and a redirect to the secure 443 port.
+
+```
+
+    server {
+        listen 80;
+        server_name  gitea.ourwebsite.com;
+
+        location /.well-known/acme-challenge/ {
+            root /var/www/certbot;
+        }
+
+        location / {
+            return 301 https://$host$request_uri;
+        }        
+    }
+
+```
+
+The SSL server is also mostly the same, except instead fo defining a root directory for the website, you define proxy settings back to our upstream.
+
+```
+
+    server {
+        listen 443 ssl;
+        server_name gitea.ourwebsite.com;
+        server_tokens off;
+
+        ssl_certificate /etc/letsencrypt/live/websites/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/websites/privkey.pem;
+        include /etc/letsencrypt/options-ssl-nginx.conf;
+        ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+        location / {
+            proxy_pass         http://docker-gitea;
+            proxy_redirect     off;
+            proxy_set_header   Host $host;
+            proxy_set_header   X-Real-IP $remote_addr;
+            proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header   X-Forwarded-Host $server_name;
+        }
+    }
+
+```
+
+# Certbot and init-letsencrypt.sh
+
+Once you have configured NGINX it is time to initialize your SSL certificates.  The problem is that in order for NGINX to start the SSL configuration we defined, we need to have actual SSL certificates.  We do that with the included script ```init-letsencrypt.sh```.  The original source for this script is from the [Nginx and Let’s Encrypt with Docker in Less Than 5 Minutes](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71) article.  I've made some minor modifications to fix a problem that was created when trying to do multiple servers.
