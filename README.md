@@ -7,7 +7,11 @@ One of NGINX’s core functionalities is to act as a reverse proxy.  A reverse p
 Today we’ll do just that using Gitea.  Gitea describes themselves as “A painless self-hosted Git service.”.  Since they offer a docker container on docker hub it is easy for us to make use of.
 
 
-# The docker-compose.yml at a glance. 
+## Before you start.
+In order to use these container you need to be running docker on a machine that has an IP address on the internet that has port 22, 80, and 443 open to the world.  This machine if already running ssh should have ssh reconfigured to a different port.  I typically use port 2222.  The reason for this is that Gitea needs access to port 22 for it's own ssh server.
+
+
+## The docker-compose.yml at a glance. 
 The docker compose is comprised of 5 pieces.
 
 * NGINX - Which can be used to serve websites, or as a reverse proxy.
@@ -20,7 +24,7 @@ The only things that we need to change here are the database settings in the GIT
 Do not change the service names as the initializing script will require the "nginx" service name, and NGINX uses the service names for routing purposes on the internal network.
 
 
-# Configuring NGINX.
+## Configuring NGINX.
 
 We're going to configure 2 servers.  One will be a static website, and the other will be our reverse proxy to gitea.  We include the entire nginx configuration directory so that we can make manage it without baking it into the NGINX container itself
 
@@ -44,7 +48,7 @@ We're going to configure 2 servers.  One will be a static website, and the other
 For this tutorial we only really care about the files in ```conf/nginx/conf.d```  there are 2 of them, one of them is for our website that will serve static pages, the second is for gitea reverse proxy.
 
 
-# Static Website.
+## Static Website.
 
 Our first server declaration is pretty simple.  We have our domain ```ourwebsite.com``` on port 80 we add the acme-challenge location which Certbot uses to make sure we have a valid webserver up.  The main root, we'll do a redirect to the secure 443 layer if someone goes to port 80.
 
@@ -91,7 +95,7 @@ The SSL layer We define our webroot, and our index file type.  We'll also define
 ```
 
 
-# Gitea reverse proxy.
+## Gitea reverse proxy.
 
 The reverse proxy is a bit more complicated, but not that much.  First we create an upstream reference to the docker gitea installation.
 
@@ -146,7 +150,7 @@ The SSL server is also mostly the same, except instead fo defining a root direct
 
 ```
 
-# Certbot and init-letsencrypt.sh
+## Certbot and init-letsencrypt.sh
 
 Once you have configured NGINX it is time to initialize your SSL certificates.  The problem is that in order for NGINX to start the SSL configuration we defined, we need to have actual SSL certificates.  We do that with the included script ```init-letsencrypt.sh```.  The original source for this script is from the [Nginx and Let’s Encrypt with Docker in Less Than 5 Minutes](https://medium.com/@pentacent/nginx-and-lets-encrypt-with-docker-in-less-than-5-minutes-b4b8a60d3a71) article.  I've made some minor modifications to fix a problem that was created when trying to do multiple servers.
 
@@ -201,6 +205,6 @@ Now execute the command in productino mode.
 
 You should be greated with the same message, but this time the certificates will be real and you should not be able to access the front page of Gitea, and of Your website.
 
-# Gitea configuration.
+## Gitea configuration.
 
 Clicking on the login button of your Gitea installation will bring you to the install page.  I found that I had to use the root user and password for the database to get the database setup, but later was able to edit to the gitea user and password.  Don't forget to setup an administrator username and password. Follow the gitea instructions from here, to configure your installation.  As I get more comfortable with Gitea I'll write up more about it here.
