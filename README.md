@@ -8,18 +8,18 @@ Today we’ll do just that using Gitea.  Gitea describes themselves as “A pain
 
 
 ## Before you start.
-In order to use these container you need to be running docker on a machine that has an IP address on the internet that has port 22, 80, and 443 open to the world.  This machine if already running ssh should have ssh reconfigured to a different port.  I typically use port 2222.  The reason for this is that Gitea needs access to port 22 for it's own ssh server.
+In order to use these containers, you need to be running docker on a machine that has an IP address on the internet that has port 22, 80, and 443 open to the world.  This machine if already running ssh should have ssh reconfigured to a different port.  I typically use port 2222.  The reason for this is that Gitea needs access to port 22 for its own ssh server.
 
 
 ## The docker-compose.yml at a glance. 
-The docker compose is comprised of 5 pieces.
+The docker-compose is comprised of 5 pieces.
 
 * NGINX - Which can be used to serve websites, or as a reverse proxy.
 * CERBOT - Which is used to generate our secure certificates
-* GITEA - For our example we'll use this as our back end application that we reverse proxy to
+* GITEA - For our example, we'll use this as our back end application that we reverse proxy to
 * MariaDB (GITEADB) - Database layer for Gitea.
 
-The only things that we need to change here are the database settings in the GITEA container and the GITEADB container.  Choose a username and password and a password for the root user, save and your done with editing the docker compose file.
+The only things that we need to change here are the database settings in the GITEA container and the GITEADB container.  Choose a username and password and a password for the root user, save and you're done with editing the docker-compose file.
 
 Do not change the service names as the initializing script will require the "nginx" service name, and NGINX uses the service names for routing purposes on the internal network.
 
@@ -30,27 +30,27 @@ We're going to configure 2 servers.  One will be a static website, and the other
 
 ```
 ├── conf
-│   └── nginx
-│       ├── conf.d
-│       │   ├── website.conf
-│       │   └── gitea.conf
-│       ├── fastcgi_params
-│       ├── koi-utf
-│       ├── koi-win
-│       ├── mime.types
-│       ├── nginx.conf
-│       ├── scgi_params
-│       ├── uwsgi_params
-│       └── win-utf
+│   └── nginx
+│       ├── conf.d
+│       │   ├── website.conf
+│       │   └── gitea.conf
+│       ├── fastcgi_params
+│       ├── koi-utf
+│       ├── koi-win
+│       ├── mime.types
+│       ├── nginx.conf
+│       ├── scgi_params
+│       ├── uwsgi_params
+│       └── win-utf
 
 ```
 
-For this tutorial we only really care about the files in ```conf/nginx/conf.d```  there are 2 of them, one of them is for our website that will serve static pages, the second is for gitea reverse proxy.
+For this tutorial, we only really care about the files in ```conf/nginx/conf.d```  there are 2 of them, one of them is for our website that will serve static pages, the second is for gitea reverse proxy.
 
 
 ## Static Website.
 
-Our first server declaration is pretty simple.  We have our domain ```ourwebsite.com``` on port 80 we add the acme-challenge location which Certbot uses to make sure we have a valid webserver up.  The main root, we'll do a redirect to the secure 443 layer if someone goes to port 80.
+Our first server declaration is pretty simple.  We have our domain ```ourwebsite.com``` on port 80 we add the acme-challenge location which Certbot uses to make sure we have a valid web server up.  The main root, we'll do a redirect to the secure 443 poer if someone goes to port 80.
 
 ```
     server {
@@ -69,7 +69,7 @@ Our first server declaration is pretty simple.  We have our domain ```ourwebsite
 
 ```
 
-The SSL layer We define our webroot, and our index file type.  We'll also define where we'll keep our certificate files.  In our setup all certificates for all domains will go into one file.  
+The SSL layer We define our webroot, and our index file type.  We'll also define where we'll keep our certificate files.  In our setup, all certificates for all domains will go into one file.  
 
 ```
 
@@ -97,7 +97,7 @@ The SSL layer We define our webroot, and our index file type.  We'll also define
 
 ## Gitea reverse proxy.
 
-The reverse proxy is a bit more complicated, but not that much.  First we create an upstream reference to the docker gitea installation.
+The reverse proxy is a bit more complicated, but not that much.  First, we create an upstream reference to the docker Gitea installation.
 
 ```
     upstream docker-gitea {
@@ -105,7 +105,7 @@ The reverse proxy is a bit more complicated, but not that much.  First we create
     }
 ```
 
-Then just like for the static website we'll create our acme-challenge location, and a redirect to the secure 443 port.
+Then just like for the static website, we'll create our acme-challenge location and a redirect to the secure 443 port.
 
 ```
 
@@ -163,15 +163,15 @@ rsa_key_size=4096
 email="" # Adding a valid address is strongly recommended
 ```
 
-domains:  In our example we have 3 domains.  We want to pass them in as a single string.  Each domain separated by a comma, with NO SPACES.  This is how we'll pass them into Cerbot.   
+domains:  In our example, we have 3 domains.  We want to pass them in as a single string.  Each domain separated by a comma, with NO SPACES.  This is how we'll pass them into Cerbot.   
 
 cert_name: is the path in our ssl cert that we use as a common name so that we can load in the cert from all our servers.
 
 rsa_key_size: Is how big if a key you want to create 4096 is a good place to start.
 
-email: Define an email address, it's not manditory, but it's recommended.
+email: Define an email address, it's not mandatory, but it's recommended.
 
-With these 4 variables in the script set we are not ready to run it in staging mode.
+With these 4 variables in the script set, we are not ready to run it in staging mode.
 
 ```
 ./init-letsencrypt.sh --stage
@@ -179,7 +179,7 @@ With these 4 variables in the script set we are not ready to run it in staging m
 
 We want to first run it in stage to make sure everything is configured correctly.  If we execute it in production mode let's encrypt may encounter rate limits which will prevent you from successfully getting your certificate.
 
-If you run the command and are greeted with a the below message then you have successfully configured the servers.
+If you run the command and are greeted with the below message then you have successfully configured the servers.
 
 ```
 IMPORTANT NOTES:
@@ -197,22 +197,24 @@ You should visit your URLs you'll get warnings about insecure certificates, but 
 
 Once you verify all your domains are available it's time to run it in production mode, but before running in production mode you should bring down the containers with the ```docker-compose down``` command.
 
-Now execute the command in productino mode.
+Now execute the command in production mode.
 
 ```
 ./init-letsencrypt.sh
 ```
 
-You should be greated with the same message, but this time the certificates will be real and you should not be able to access the front page of Gitea, and of Your website.
+You should be greeted with the same message, but this time the certificates will be real and you should not be able to access the front page of Gitea, and of Your website.
 
 ## Gitea configuration.
 
-Clicking on the login button of your Gitea installation will bring you to the install page.  I found that I had to use the root user and password for the database to get the database setup, but later was able to edit to the gitea user and password.  Don't forget to setup an administrator username and password. Follow the gitea instructions from here, to configure your installation.  As I get more comfortable with Gitea I'll write up more about it here.
+Clicking on the login button of your Gitea installation will bring you to the install page.  I found that I had to use the root user and password for the database to get the database setup but later was able to edit to the Gitea user and password.  Don't forget to set up an administrator username and password. Follow the Gitea instructions from here, to configure your installation.  As I get more comfortable with Gitea I'll write up more about it here.
 
 ## Ending note
-A quick note, in the data directory you have you'll have 3 sub directories.
+A quick note, in the data directory you have you'll have 3 subdirectories.
 
-* gitea - is the install directory of gitea
-* gitea_db - is the maria db database files.
-* html - is the html directory for our static web server.
+* gitea - is the install directory of Gitea
+* gitea_db - is the MariaDB database files.
+* html - is the HTML directory for our static web server.
+
+
 
